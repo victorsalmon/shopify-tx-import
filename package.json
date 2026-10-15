@@ -1,0 +1,58 @@
+{
+  "name": "@clocklobster/shopify-sales",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "0.1.0",
+  "description": "Import Shopify sales records for bookkeeping. Pure order-to-ledger adapter, Admin webhook verification, and nightly backfill polling. Sales records only — no invoicing, carts, checkout, or agent-order code.",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "docs",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "shopify",
+    "sales",
+    "bookkeeping",
+    "accounting",
+    "webhooks",
+    "typescript"
+  ],
+  "author": "Victor Salmon",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/victorsalmon/shopify-sales.git"
+  },
+  "bugs": {
+    "url": "https://github.com/victorsalmon/shopify-sales/issues"
+  },
+  "homepage": "https://github.com/victorsalmon/shopify-sales#readme",
+  "dependencies": {
+    "@shopify/admin-api-client": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "fast-check": "^4.9.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.0.0",
+    "vitest": "^4.0.0"
+  }
+}
