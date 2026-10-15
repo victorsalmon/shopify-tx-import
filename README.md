@@ -1,4 +1,4 @@
-# `shopify-sales`
+# `shopify-tx-import`
 
 Import Shopify **sales records** for bookkeeping. A pure order-to-ledger
 adapter, Admin webhook verification, and a nightly backfill poll client —
@@ -29,7 +29,7 @@ sales only, no invoicing, carts, checkout, or agent-order code.
 ## Installation
 
 ```bash
-npm install @clocklobster/shopify-sales
+npm install @clocklobster/shopify-tx-import
 ```
 
 ---
@@ -37,7 +37,7 @@ npm install @clocklobster/shopify-sales
 ## Quick start
 
 ```typescript
-import { orderToSalesRecord, applyPayoutSummary } from '@clocklobster/shopify-sales';
+import { orderToSalesRecord, applyPayoutSummary } from '@clocklobster/shopify-tx-import';
 
 const record = orderToSalesRecord(adminOrderJson);
 // record: { externalId: '#1001', grossCents: 10000, taxCents: 1300,
@@ -50,7 +50,7 @@ const withFee = applyPayoutSummary(record, payoutSummaryJson, 'shopify_payments'
 ### Verify a webhook
 
 ```typescript
-import { verifyShopifyWebhook, createWebhookDedupe, isSupportedSalesTopic } from '@clocklobster/shopify-sales';
+import { verifyShopifyWebhook, createWebhookDedupe, isSupportedSalesTopic } from '@clocklobster/shopify-tx-import';
 
 const dedupe = createWebhookDedupe(); // persist ids in Redis/DB for multi-process
 
@@ -73,7 +73,7 @@ async function handleWebhook(req: Request, secret: string) {
 ### Nightly backfill
 
 ```typescript
-import { createShopifyAdminExecutor, pollOrdersToSalesRecords } from '@clocklobster/shopify-sales';
+import { createShopifyAdminExecutor, pollOrdersToSalesRecords } from '@clocklobster/shopify-tx-import';
 
 const executor = createShopifyAdminExecutor({
   shop: process.env.SHOPIFY_SHOP!, // e.g. example.myshopify.com

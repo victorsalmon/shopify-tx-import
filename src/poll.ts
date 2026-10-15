@@ -17,7 +17,7 @@ export const SHOPIFY_ADMIN_API_VERSION = '2026-10';
 /** `https://<shop>/admin/api/2026-10/graphql.json` for a `myshopify.com` domain. */
 export function adminGraphqlEndpoint(shopDomain: string): string {
   const shop = shopDomain.trim().replace(/^https?:\/\//, '').replace(/\/+$/, '');
-  if (shop === '') throw new Error('shopify-sales: shop domain must be non-empty');
+  if (shop === '') throw new Error('shopify-tx-import: shop domain must be non-empty');
   return `https://${shop}/admin/api/${SHOPIFY_ADMIN_API_VERSION}/graphql.json`;
 }
 
@@ -77,12 +77,12 @@ export const ORDERS_UPDATED_QUERY = /* GraphQL */ `
 /** Build the `updated_at` search filter. Bounds must be parseable dates. */
 export function buildOrdersUpdatedFilter(updatedAtMin: string, updatedAtMax?: string): string {
   if (Number.isNaN(Date.parse(updatedAtMin))) {
-    throw new Error('shopify-sales: updatedAtMin must be a parseable date');
+    throw new Error('shopify-tx-import: updatedAtMin must be a parseable date');
   }
   let filter = `updated_at:>='${updatedAtMin}'`;
   if (updatedAtMax !== undefined) {
     if (Number.isNaN(Date.parse(updatedAtMax))) {
-      throw new Error('shopify-sales: updatedAtMax must be a parseable date');
+      throw new Error('shopify-tx-import: updatedAtMax must be a parseable date');
     }
     filter += ` AND updated_at:<='${updatedAtMax}'`;
   }
@@ -113,7 +113,7 @@ const DEFAULT_MAX_PAGES = 500;
 export async function* pollUpdatedOrders(options: PollOrdersOptions): AsyncGenerator<unknown> {
   const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE;
   if (!Number.isInteger(pageSize) || pageSize < 1 || pageSize > 250) {
-    throw new Error('shopify-sales: pageSize must be an integer in 1..250');
+    throw new Error('shopify-tx-import: pageSize must be an integer in 1..250');
   }
   const maxPages = options.maxPages ?? DEFAULT_MAX_PAGES;
   const filter = buildOrdersUpdatedFilter(options.updatedAtMin, options.updatedAtMax);
@@ -128,33 +128,33 @@ export async function* pollUpdatedOrders(options: PollOrdersOptions): AsyncGener
     if (response.errors !== undefined && response.errors !== null && response.errors.length > 0) {
       const first = response.errors[0];
       throw new Error(
-        `shopify-sales: orders query failed: ${String(first?.message ?? 'unknown GraphQL error')}`,
+        `shopify-tx-import: orders query failed: ${String(first?.message ?? 'unknown GraphQL error')}`,
       );
     }
     if (!isRecord(response.data) || !isRecord(response.data['orders'])) {
-      throw new Error('shopify-sales: orders query returned no orders connection');
+      throw new Error('shopify-tx-import: orders query returned no orders connection');
     }
     const connection = response.data['orders'] as Record<string, unknown>;
     const edges = connection['edges'];
     if (!Array.isArray(edges)) {
-      throw new Error('shopify-sales: orders connection has no edges array');
+      throw new Error('shopify-tx-import: orders connection has no edges array');
     }
     for (const edge of edges) {
       if (isRecord(edge) && 'node' in edge) yield edge['node'];
-      else throw new Error('shopify-sales: orders edge has no node');
+      else throw new Error('shopify-tx-import: orders edge has no node');
     }
     const pageInfo = connection['pageInfo'];
     if (!isRecord(pageInfo)) {
-      throw new Error('shopify-sales: orders connection has no pageInfo');
+      throw new Error('shopify-tx-import: orders connection has no pageInfo');
     }
     if (pageInfo['hasNextPage'] !== true) return;
     const endCursor = pageInfo['endCursor'];
     if (typeof endCursor !== 'string' || endCursor === '' || endCursor === after) {
-      throw new Error('shopify-sales: pagination cursor did not advance');
+      throw new Error('shopify-tx-import: pagination cursor did not advance');
     }
     after = endCursor;
   }
-  throw new Error(`shopify-sales: backfill exceeded ${maxPages} pages — narrow the window`);
+  throw new Error(`shopify-tx-import: backfill exceeded ${maxPages} pages — narrow the window`);
 }
 
 /**
@@ -185,7 +185,7 @@ export interface ShopifyAdminAuth {
  */
 export function createShopifyAdminExecutor(auth: ShopifyAdminAuth): GraphQLExecutor {
   if (auth.shop.trim() === '' || auth.accessToken === '') {
-    throw new Error('shopify-sales: shop and accessToken are required');
+    throw new Error('shopify-tx-import: shop and accessToken are required');
   }
   const client = createAdminApiClient({
     storeDomain: auth.shop.trim(),

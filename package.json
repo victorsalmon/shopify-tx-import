@@ -1,5 +1,5 @@
 {
-  "name": "@clocklobster/shopify-sales",
+  "name": "@clocklobster/shopify-tx-import",
   "publishConfig": {
     "access": "public"
   },
@@ -39,12 +39,12 @@
   "author": "Victor Salmon",
   "repository": {
     "type": "git",
-    "url": "https://github.com/victorsalmon/shopify-sales.git"
+    "url": "https://github.com/victorsalmon/shopify-tx-import.git"
   },
   "bugs": {
-    "url": "https://github.com/victorsalmon/shopify-sales/issues"
+    "url": "https://github.com/victorsalmon/shopify-tx-import/issues"
   },
-  "homepage": "https://github.com/victorsalmon/shopify-sales#readme",
+  "homepage": "https://github.com/victorsalmon/shopify-tx-import#readme",
   "dependencies": {
     "@shopify/admin-api-client": "^2.0.1"
   },

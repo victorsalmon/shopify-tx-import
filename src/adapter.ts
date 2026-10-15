@@ -20,11 +20,11 @@ import type {
  */
 export function decimalToCents(value: string | number): number {
   if (typeof value === 'string' && value.trim() === '') {
-    throw new Error('shopify-sales: invalid money amount (blank string)');
+    throw new Error('shopify-tx-import: invalid money amount (blank string)');
   }
   const n = typeof value === 'string' ? Number(value.trim()) : value;
   if (typeof n !== 'number' || !Number.isFinite(n)) {
-    throw new Error(`shopify-sales: invalid money amount ${JSON.stringify(value)}`);
+    throw new Error(`shopify-tx-import: invalid money amount ${JSON.stringify(value)}`);
   }
   return Math.round(n * 100);
 }
@@ -35,13 +35,13 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function moneyV2ToCents(value: unknown, field: string): number {
   if (!isRecord(value)) {
-    throw new Error(`shopify-sales: ${field} must be a MoneyV2 or MoneySet object`);
+    throw new Error(`shopify-tx-import: ${field} must be a MoneyV2 or MoneySet object`);
   }
   // Accept both MoneyV2 ({ amount, currencyCode }) and MoneySet ({ shopMoney }).
   const inner: unknown =
     'shopMoney' in value ? (value as { shopMoney: unknown }).shopMoney : value;
   if (!isRecord(inner) || (typeof inner['amount'] !== 'string' && typeof inner['amount'] !== 'number')) {
-    throw new Error(`shopify-sales: ${field} has no usable amount`);
+    throw new Error(`shopify-tx-import: ${field} has no usable amount`);
   }
   return decimalToCents(inner['amount'] as string | number);
 }
@@ -84,26 +84,26 @@ function normalizeStatus(value: unknown): ShopifySalesStatus {
  */
 export function orderToSalesRecord(orderJson: unknown): SalesRecord {
   if (!isRecord(orderJson)) {
-    throw new Error('shopify-sales: order must be an object');
+    throw new Error('shopify-tx-import: order must be an object');
   }
   const orderId = orderJson['id'];
   const context = orderId !== undefined ? ` (id ${String(orderId)})` : '';
 
   const name = orderJson['name'];
   if (typeof name !== 'string' || name.trim() === '') {
-    throw new Error(`shopify-sales: order has no usable name${context}`);
+    throw new Error(`shopify-tx-import: order has no usable name${context}`);
   }
 
   const processedAt = orderJson['processedAt'];
   if (typeof processedAt !== 'string' || Number.isNaN(Date.parse(processedAt))) {
-    throw new Error(`shopify-sales: order ${name} has no parseable processedAt`);
+    throw new Error(`shopify-tx-import: order ${name} has no parseable processedAt`);
   }
 
   if (!('currentTotalPriceSet' in orderJson)) {
-    throw new Error(`shopify-sales: order ${name} is missing currentTotalPriceSet`);
+    throw new Error(`shopify-tx-import: order ${name} is missing currentTotalPriceSet`);
   }
   if (!('currentTotalTaxSet' in orderJson)) {
-    throw new Error(`shopify-sales: order ${name} is missing currentTotalTaxSet`);
+    throw new Error(`shopify-tx-import: order ${name} is missing currentTotalTaxSet`);
   }
   const totalCents = moneySetToCents(orderJson['currentTotalPriceSet'], 'currentTotalPriceSet');
   const taxCents = moneySetToCents(orderJson['currentTotalTaxSet'], 'currentTotalTaxSet');
@@ -117,7 +117,7 @@ export function orderToSalesRecord(orderJson: unknown): SalesRecord {
     moneySetCurrency(orderJson['currentTotalPriceSet']) ??
     (typeof orderJson['currencyCode'] === 'string' ? (orderJson['currencyCode'] as string) : null);
   if (currency === null || currency.trim() === '') {
-    throw new Error(`shopify-sales: order ${name} has no currency`);
+    throw new Error(`shopify-tx-import: order ${name} has no currency`);
   }
 
   const grossCents = totalCents - taxCents;
@@ -138,7 +138,7 @@ export function orderToSalesRecord(orderJson: unknown): SalesRecord {
 
 function moneySetToCents(value: unknown, field: string): number {
   if (!isRecord(value) || !('shopMoney' in value)) {
-    throw new Error(`shopify-sales: ${field} must be a MoneySet with shopMoney`);
+    throw new Error(`shopify-tx-import: ${field} must be a MoneySet with shopMoney`);
   }
   return moneyV2ToCents(value, field);
 }
@@ -167,7 +167,7 @@ export function applyPayoutSummary(
   gateway?: string | null,
 ): SalesRecord {
   if (!isRecord(payoutSummaryJson)) {
-    throw new Error('shopify-sales: payout summary must be an object');
+    throw new Error('shopify-tx-import: payout summary must be an object');
   }
   const summaryGateway = payoutSummaryJson['gateway'];
   if (typeof summaryGateway === 'string' && !isShopifyPaymentsGateway(summaryGateway)) {
@@ -197,7 +197,7 @@ export function applyPayoutSummary(
 export function shopifyOrderIdempotencyKey(orderId: string | number): string {
   const id = typeof orderId === 'string' ? orderId.trim() : orderId;
   if (id === '' || (typeof id === 'number' && !Number.isFinite(id))) {
-    throw new Error('shopify-sales: order id must be a non-empty string or finite number');
+    throw new Error('shopify-tx-import: order id must be a non-empty string or finite number');
   }
   return `shopify_order:${String(id)}`;
 }

@@ -1,6 +1,6 @@
 # Scope — sales records for bookkeeping ONLY
 
-`@clocklobster/shopify-sales` imports Shopify **sales records** into bookkeeping.
+`@clocklobster/shopify-tx-import` imports Shopify **sales records** into bookkeeping.
 It is deliberately narrow:
 
 ## In scope

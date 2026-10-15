@@ -1,5 +1,5 @@
 /**
- * Public exports for `@clocklobster/shopify-sales`.
+ * Public exports for `@clocklobster/shopify-tx-import`.
  *
  * Sales-record import for bookkeeping ONLY — no invoicing, cart/checkout,
  * or UCP/MCP code (see `docs/scope.md`).
