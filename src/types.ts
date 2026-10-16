@@ -87,3 +87,28 @@ export interface ShopifyPayoutSummary {
   fee?: ShopifyMoneyV2 | ShopifyMoneySet;
   gateway?: string;
 }
+
+/**
+ * Minimal `ShopifyPaymentsAssociatedOrder` shape: the order a balance
+ * transaction belongs to (`associatedOrder { id name }`).
+ */
+export interface ShopifyAssociatedOrder {
+  id: string;
+  name: string;
+}
+
+/**
+ * Minimal `ShopifyPaymentsBalanceTransaction` shape consumed by
+ * `applyBalanceTransaction`. Per-order fee source: `fee` is the processing
+ * fee for THIS transaction (unlike the payout-summary `chargesFee`, which is
+ * a payout-level aggregate over many orders and must never be attributed to
+ * a single order).
+ */
+export interface ShopifyBalanceTransaction {
+  id?: string | number;
+  type?: string;
+  test?: boolean;
+  fee?: ShopifyMoneyV2 | ShopifyMoneySet;
+  associatedOrder?: ShopifyAssociatedOrder | null;
+  gateway?: string;
+}

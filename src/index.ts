@@ -13,6 +13,8 @@ export type {
   ShopifyMoneySet,
   ShopifyOrderNode,
   ShopifyPayoutSummary,
+  ShopifyAssociatedOrder,
+  ShopifyBalanceTransaction,
 } from './types.js';
 
 export {
@@ -20,6 +22,7 @@ export {
   orderToSalesRecord,
   isShopifyPaymentsGateway,
   applyPayoutSummary,
+  applyBalanceTransaction,
   shopifyOrderIdempotencyKey,
 } from './adapter.js';
 

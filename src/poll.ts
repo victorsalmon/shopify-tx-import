@@ -67,6 +67,16 @@ export const ORDERS_UPDATED_QUERY = /* GraphQL */ `
               currencyCode
             }
           }
+          taxLines {
+            title
+            rate
+            priceSet {
+              shopMoney {
+                amount
+                currencyCode
+              }
+            }
+          }
           displayFinancialStatus
         }
       }

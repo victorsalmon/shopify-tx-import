@@ -189,6 +189,95 @@ export function applyPayoutSummary(
 }
 
 /**
+ * True when two order ids name the same order: exact match, or same trailing
+ * numeric segment (`gid://shopify/Order/6249512505633` vs `6249512505633`).
+ */
+function orderIdMatches(a: unknown, b: unknown): boolean {
+  if (typeof a !== 'string' && typeof a !== 'number') return false;
+  if (typeof b !== 'string' && typeof b !== 'number') return false;
+  const sa = String(a).trim();
+  const sb = String(b).trim();
+  if (sa === '' || sb === '') return false;
+  if (sa === sb) return true;
+  const tail = (s: string) => s.split('/').pop() ?? s;
+  return tail(sa) === tail(sb);
+}
+
+function recordOrderId(record: SalesRecord): string | number | null {
+  if (isRecord(record.rawJson)) {
+    const id = record.rawJson['id'];
+    if (typeof id === 'string' || typeof id === 'number') return id;
+  }
+  return null;
+}
+
+/**
+ * Fill `feeCents` from a Shopify Payments **balance transaction** for this
+ * order (`ShopifyPaymentsBalanceTransaction.fee`) and recompute `netCents`.
+ * Returns a new record; the input is untouched.
+ *
+ * This is the per-order fee source: `fee` is the processing fee for the
+ * transaction linked to this order via `associatedOrder`. Contrast
+ * {@link applyPayoutSummary}, whose `chargesFee` is a payout-level aggregate
+ * over many orders and must never be attributed to a single order.
+ *
+ * Fail-closed (returned unchanged, `feeCents` stays `null`) when:
+ *
+ * - the transaction carries no `associatedOrder`, or it names a different
+ *   order (matched by order id — GID or numeric, read from the record's
+ *   `rawJson` — or by order `name` against the record's `externalId`);
+ * - `test` is `true`: test-mode transactions expose no real fee (a `0.00`
+ *   test fee is not bookable);
+ * - `gateway` (param or `gateway` field on the transaction) is not Shopify
+ *   Payments — balance transactions only exist for Shopify Payments anyway;
+ * - the transaction carries no `fee` field.
+ */
+export function applyBalanceTransaction(
+  record: SalesRecord,
+  txJson: unknown,
+  gateway?: string | null,
+): SalesRecord {
+  if (!isRecord(txJson)) {
+    throw new Error('shopify-tx-import: balance transaction must be an object');
+  }
+  const txGateway = txJson['gateway'];
+  if (typeof txGateway === 'string' && !isShopifyPaymentsGateway(txGateway)) {
+    return { ...record };
+  }
+  if (gateway !== undefined && gateway !== null && !isShopifyPaymentsGateway(gateway)) {
+    return { ...record };
+  }
+  if (txJson['test'] === true) {
+    return { ...record };
+  }
+  const associated = txJson['associatedOrder'];
+  if (!isRecord(associated)) {
+    return { ...record };
+  }
+  const rawId = recordOrderId(record);
+  const idHit =
+    rawId !== null &&
+    (orderIdMatches(associated['id'], rawId) || orderIdMatches(associated['id'], record.externalId));
+  const nameHit =
+    typeof associated['name'] === 'string' &&
+    (associated['name'] as string).trim() !== '' &&
+    (associated['name'] as string).trim() === record.externalId.trim();
+  if (!idHit && !nameHit) {
+    return { ...record };
+  }
+  const fee = txJson['fee'] ?? null;
+  if (fee === null || fee === undefined) {
+    return { ...record };
+  }
+  const feeCents = moneyV2ToCents(fee, 'fee');
+  return {
+    ...record,
+    feeCents,
+    netCents: record.grossCents + record.taxCents - record.refundedCents - feeCents,
+  };
+}
+
+/**
  * Stable idempotency key for an order: `shopify_order:<id>`, where `<id>` is
  * the numeric Admin API id (or the full GID — either is stable, pick one and
  * stay with it). Re-ingesting the same order yields the same key, so the
