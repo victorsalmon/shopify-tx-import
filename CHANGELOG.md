@@ -4,6 +4,16 @@ All notable changes to `@clocklobster/shopify-tx-import` are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `docs/RATE_LIMITS.md`: vendor-verified GraphQL Admin rate limits for the
+  orders poll (per-plan point restore rates, 1,000-point single-query cap,
+  `extensions.cost` throttle signals, `429` shape) plus the host checklist.
+  Per-plan bucket capacity and numeric concurrency limits are marked
+  UNVERIFIED (unpublished by the vendor).
+
 ## [0.1.0] — 2026-10-15
 
 ### Added

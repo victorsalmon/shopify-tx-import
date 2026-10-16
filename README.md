@@ -88,6 +88,8 @@ const records = await pollOrdersToSalesRecords({
 
 Runnable example (no network): [`examples/basic.mjs`](./examples/basic.mjs) — run with `npm run build && node examples/basic.mjs`.
 
+Rate-limit behavior for the poll (point bucket, restore rates, `429` shape): [`docs/RATE_LIMITS.md`](./docs/RATE_LIMITS.md).
+
 ---
 
 ## Quality and test discipline
