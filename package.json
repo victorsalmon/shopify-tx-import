@@ -3,7 +3,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Import Shopify sales records for bookkeeping. Pure order-to-ledger adapter, Admin webhook verification, and nightly backfill polling. Sales records only — no invoicing, carts, checkout, or agent-order code.",
   "license": "MIT",
   "type": "module",
